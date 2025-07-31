@@ -47,7 +47,6 @@ function getOrCreateContract(signer: PolkadotSigner) {
 export function CurrentGame({address}: ContractProps) {
     const accounts = useAccounts();
     const senderAddress = accounts.at(0)?.address;
-    console.log("senderAddress : " + senderAddress);
 
     const [game, setGame] = useState<Game>();
 
@@ -56,12 +55,7 @@ export function CurrentGame({address}: ContractProps) {
     const refreshInBackground = async () => {
         try {
             if (signer) {
-                const contract = getOrCreateContract(signer);
-
-                const result = await contract.getCurrentGame();
-                console.log(result);
-
-                const current: Game = result;
+                const current: Game = await getOrCreateContract(signer).getCurrentGame();
                 setGame(current);
             }
 
@@ -75,13 +69,14 @@ export function CurrentGame({address}: ContractProps) {
     useEffect(() => {
         const backgroundSyncInterval = setInterval(() => {
             refreshInBackground();
-        }, 20 * 1000); // every 20 seconds
+        }, 10 * 1000); // every 10 seconds
 
         return () => {
             clearInterval(backgroundSyncInterval);
         }
     });
 
+    // this code doesn't work for the time being
     const game2: Game | undefined = useLazyLoadQuery(
         (builder) =>
             builder.contract(
@@ -89,34 +84,45 @@ export function CurrentGame({address}: ContractProps) {
                 address,
                 (builder) => builder.message("get_current_game",
                     {
-                        origin: senderAddress,
+                        origin: senderAddress, // it doesn't work
                     }
                 ),
             ),
     );
-
     console.log(game2)
 
     return (
         <div>
             <div>
-                {game == undefined
-                    ? "The game is loading or no game is started yet"
-                    : "Game " + game.game_number + " - Guess the number between " + game.min_number + " and " + game.max_number
-                }
+                {(() => {
+                    if (game == undefined){
+                        return "The game is loading or no game is started yet"
+                    }
+                    return "Game " + game.game_number + " - Guess the number between " + game.min_number + " and " + game.max_number;
+                })()}
             </div>
             <div>
-                {game == undefined
-                    ? ""
-                    : "Attempt " + game.attempt + " - " +
-                    (game.last_guess == undefined ? "No guess made yet"
-                            : (game.last_clue == undefined ? "Waiting the clue for your guess "
-                            : (game.last_clue?.type == "Less" ? "My number is less than "
-                                : (game.last_clue?.type == "More" ? "My number is more than "
-                                        : "Congrats, you found the number "
-                                ))) + game.last_guess
-                    )
-                }
+                {(() => {
+                    if (game == undefined){
+                        return "";
+                    }
+                    if (game.last_guess == undefined){
+                        return "No guess made yet";
+                    }
+                    if (game.last_clue == undefined){
+                        return "Attempt " + game.attempt + " - Waiting for the result for number " + game.last_guess;
+                    }
+                    if (game.last_clue.type == "Less"){
+                        return "Attempt " + game.attempt + " - My number is less than " + game.last_guess;
+                    }
+                    if (game.last_clue.type == "More"){
+                        return "Attempt " + game.attempt + " - My number is more than " + game.last_guess;
+                    }
+                    if (game.last_clue.type == "Found"){
+                        return "Congrats, you found the number " + game.last_guess + " in " + game.attempt + " attempts!";
+                    }
+                    return "";
+                })()}
             </div>
         </div>
     );
@@ -125,11 +131,7 @@ export function CurrentGame({address}: ContractProps) {
 
 function MakeGuess({address}: ContractProps) {
 
-    const [inputValue, setInputValue] = useState<string | undefined>();
-    const [inputNumber, setInputNumber] = useState<number>(0);
-
-    const accounts = useAccounts();
-    const signer = accounts.at(0)?.polkadotSigner;
+    const [inputNumber, setInputNumber] = useState<number>(-1);
 
     const [status, guess] = useContractMutation((mutate) =>
         mutate(gtnContract, address, "guess", {
@@ -137,14 +139,11 @@ function MakeGuess({address}: ContractProps) {
         }),
     );
 
-    const makeGuess = async () => {
-        if (inputValue && signer) {
-            const v = Number(inputValue);
+    const setInputValue = (value: string) => {
+        if (value) {
+            const v = Number(value);
             console.log(v);
             setInputNumber(v);
-            //guess();
-            const contract = getOrCreateContract(signer);
-            await contract.makeAGuess(v);
         }
     };
 
@@ -152,7 +151,7 @@ function MakeGuess({address}: ContractProps) {
         <div>
             <TextField label="Enter your number" variant="outlined"
                        onChange={event => setInputValue(event.target.value)}/>
-            <button onClick={makeGuess}>Make a guess</button>
+            <button onClick={guess}>Make a guess</button>
             {(() => {
                 switch (status) {
                     case idle:
