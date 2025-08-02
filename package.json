@@ -24,14 +24,15 @@
     "@mui/material": "^7.2.0",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-api/sdk-ink": "^0.1.0",
-    "@reactive-dot/react": "^0.43.1",
+    "@reactive-dot/react": "^0.44.0",
     "dayjs": "^1.11.9",
     "dot-connect": "^0.20.0",
     "polkadot-api": "*",
     "react": "latest",
     "react-dom": "latest",
     "react-error-boundary": "^6.0.0",
-    "@polkadot/keyring": "^13.5.4"
+    "@polkadot/keyring": "^13.5.4",
+    "react-hot-toast" : "^2.5.2"
   },
   "devDependencies": {
     "@types/react": "^19.1.9",
