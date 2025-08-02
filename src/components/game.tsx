@@ -1,7 +1,7 @@
 import {SignerProvider, useAccounts} from "@reactive-dot/react";
 import {useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
-import {GameContext} from "./context/game-context.tsx";
+import {GameContext} from "../context/game-context.tsx";
 
 
 export function CurrentGame() {

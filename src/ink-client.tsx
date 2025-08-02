@@ -8,6 +8,7 @@ import {encodeAddress} from "@polkadot/keyring"
 import {toast, type ToastOptions} from "react-hot-toast"
 import {type Observer} from "rxjs"
 import {CONTRACT_ADDRESS} from "./config.ts";
+import {Button} from "@mui/material";
 
 let myContract: MyContract | undefined;
 
@@ -76,7 +77,7 @@ export class MyContract {
         this.contract
             .send("guess", tx)
             .signSubmitAndWatch(this.sender)
-            .subscribe(buildEventObserver(txToast, callback));
+            .subscribe(buildEventObserver(txToast, "Number " + guess + " submitted", callback));
     }
 
 
@@ -102,30 +103,33 @@ export class MyContract {
         this.contract
             .send("start_new_game", tx)
             .signSubmitAndWatch(this.sender)
-            .subscribe(buildEventObserver(txToast, callback));
+            .subscribe(buildEventObserver(txToast, "New game started", callback));
     }
 }
 
 
 type Callback = () => void;
 
-function buildEventObserver(toastId: string, callback: Callback): Partial<Observer<TxEvent>>{
+function buildEventObserver(toastId: string,  successMessage: string, callback: Callback): Partial<Observer<TxEvent>>{
     return {
         next: (event) => {
-            console.log("Tx event: ", event.type)
-            toast.loading('Tx event:' + event.type, {id: toastId});
+            let message =  'Tx event:' + event.type;
             if (event.type === "signed") {
-                toast.loading("Signed tx with hash:" + event.txHash, {id: toastId});
+                message = "Signed tx with hash: " + event.txHash;
+            } else if (event.type === "broadcasted") {
+                message = "Broadcasted tx with hash: " + event.txHash;
+            } else if (event.type === "txBestBlocksState") {
+                message = "Submitted tx with hash: " + event.txHash;
+            } else if (event.type === "finalized") {
+                message = "Finalized tx with hash: " + event.txHash;
             }
-            if (event.type === "broadcasted") {
-                toast.loading("Broadcasted tx with hash:" + event.txHash, {id: toastId});
-            }
-            if (event.type === "txBestBlocksState") {
-                toast.loading("Submitted tx with hash:" + event.txHash, {id: toastId});
-            }
-            if (event.type === "finalized") {
-                toast.loading("Finalized tx with hash:" + event.txHash, {id: toastId});
-            }
+            const network = "pop";
+            const toastValue = (t) => (
+                <span className="toast-tx-result text-right">
+                    {message}<br/><a target="_blank" href={"https://"+network+".subscan.io/extrinsic/"+event?.txHash}>show in Subscan</a>
+                 </span>
+            );
+            toast.loading(toastValue, {id: toastId});
         },
         error: (message) => {
             console.error(message)
@@ -133,21 +137,18 @@ function buildEventObserver(toastId: string, callback: Callback): Partial<Observ
             toast.error(message);
         },
         complete: () => {
-            const message = "Transaction sent successfully";
-            /*
             const toastValue = (t) => (
-                <span "className"="toast-tx-result text-right">
-                    Transaction sent successfully
+                <span className="toast-tx-result text-right">
+                    {successMessage}
                     <Button sx={{margin:'0 3px', textTransform:'none'}} onClick={() => toast.dismiss(t.id)}>X</Button>
                  </span>
-            )
-             */
+            );
             toast.dismiss(toastId);
             const toastOptions: ToastOptions = {
                 duration: 5000,
                 position: 'bottom-right',
             };
-            toast("Transaction sent successfully", toastOptions);
+            toast(toastValue, toastOptions);
             callback();
         }
     };

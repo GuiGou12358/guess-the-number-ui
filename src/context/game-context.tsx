@@ -1,7 +1,7 @@
 import {createContext, useEffect, useState} from 'react';
 import type {Attempt, Game} from "../types.ts";
 import {useAccounts} from "@reactive-dot/react";
-import {getOrCreateContract} from "../ink-client.ts";
+import {getOrCreateContract} from "../ink-client.tsx";
 
 
 export const GameContext = createContext();
