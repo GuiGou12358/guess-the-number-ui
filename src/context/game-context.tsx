@@ -2,15 +2,15 @@ import {createContext, useContext, useEffect, useState} from 'react';
 import type {Attempt, Game} from "../types.ts";
 import {getOrCreateContract} from "../contract.tsx";
 import {MySignerContext} from "./my-signer-context.tsx";
-import {toast} from "react-hot-toast";
-
 
 export const GameContext = createContext<GameContextStruct>();
 export type GameContextStruct = {
     game : Game | undefined,
     getAttempts : () => Attempt[],
-    startNewGame : (minNumber: number, maxNumber: number) => Promise<void>,
-    makeGuess : (guess: number) => Promise<void>,
+    //startNewGame : (minNumber: number, maxNumber: number) => Promise<void>,
+    //makeGuess : (guess: number) => Promise<void>,
+    refreshGuesses : () => void,
+    refreshGame : () => void,
 }
 
 function updateAttempts(attempts: Attempt[], game: Game){
@@ -110,56 +110,14 @@ export const GameContextProvider = ({ children }) => {
         }
     });
 
-    /*
-    const [status, guess] = useContractMutation((mutate) =>
-        mutate(gtnContract, address, "guess", {
-            data: {"guess": inputNumber.current?.value},
-        }),
-    );
-     */
 
     const refreshGuesses = () => {
         setNbNewGuesses(nbNewGuesses + 1);
     }
 
-    const makeGuess = async (guess: number) => {
-        console.log("Guess " + guess);
-        if (isNaN(Number(guess)) || guess < 0){
-            toast.error("The input must be positive number");
-            return;
-        }
-        if (signer){
-            await getOrCreateContract().makeAGuess(signer, guess, refreshGuesses);
-        }
-    };
-
-    /*
-    const [status, newGame] = useContractMutation((mutate) =>
-        mutate(gtnContract, address, "start_new_game", {
-            data: {"min_number": refMin.current?.value, "max_number": refMax.current?.value},
-        }),
-    );
-    */
-
     const refreshGame = () => {
         setNbNewGames(nbNewGames + 1);
     }
-
-    const startNewGame = async (minNumber: number, maxNumber: number) => {
-        console.log("Start new game " + minNumber + " - " + maxNumber);
-        if (isNaN(Number(minNumber)) || isNaN(Number(maxNumber)) || minNumber < 0 || maxNumber < 0){
-            toast.error("Min and Max must be positive numbers");
-            return;
-        }
-        if (minNumber >= maxNumber){
-            toast.error("Min must be inferior to Max");
-            return;
-        }
-        if (signer){
-            //newGame();
-            await getOrCreateContract().startNewGame(signer, minNumber, maxNumber, refreshGame);
-        }
-    };
 
     const getAttempts =  () => {
         if (game == undefined || attempts==undefined){
@@ -169,7 +127,7 @@ export const GameContextProvider = ({ children }) => {
     };
 
     return (
-        <GameContext.Provider value={{ game, getAttempts, startNewGame, makeGuess }} >
+        <GameContext.Provider value={{ game, getAttempts, refreshGuesses, refreshGame }} >
             {children}
         </GameContext.Provider>
     );

@@ -2,6 +2,11 @@ import {useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
 import {GameContext} from "../context/game-context.tsx";
 import {GameIntro} from "./game-intro.tsx";
+import {CONTRACT_ADDRESS, gtnContract} from "../config.ts";
+import {toast} from "react-hot-toast";
+import {useContractMutation, useMutationEffect, useQueryErrorResetter} from "@reactive-dot/react";
+import {MutationError, pending} from "@reactive-dot/core";import { Suspense } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 
 
 export function CurrentGame() {
@@ -58,15 +63,52 @@ export function CurrentGame() {
 
 export function MakeGuess() {
 
-    const { makeGuess } = useContext(GameContext)
+    const { refreshGuesses } = useContext(GameContext)
 
-    // @ts-ignore
-    const inputNumber = useRef();
+    const inputNumber = useRef('');
+
+    const [_, makeGuess] = useContractMutation((mutate) =>
+        mutate(gtnContract, CONTRACT_ADDRESS, "guess", {
+            data: {"guess": inputNumber.current?.value},
+        }),
+    );
 
     const submit = async () => {
         const guessNumber = inputNumber.current?.value;
-        await makeGuess(guessNumber);
+
+        console.log("Guess " + guessNumber);
+        if (guessNumber == undefined || guessNumber.length == 0 || isNaN(Number(guessNumber)) || guessNumber < 0){
+            toast.error("The input must be positive number");
+            return;
+        }
+        makeGuess();
     };
+
+
+    useMutationEffect((event) => {
+        if (event.value === pending) {
+            toast.loading("Submitting transaction", { id: event.id });
+            return;
+        }
+
+        if (event.value instanceof MutationError) {
+            toast.error("Failed to submit transaction", { id: event.id });
+            return;
+        }
+
+        switch (event.value.type) {
+            case "finalized":
+                if (event.value.ok) {
+                    toast.success("Submitted transaction", { id: event.id });
+                    refreshGuesses();
+                } else {
+                    toast.error("Transaction failed", { id: event.id });
+                }
+                break;
+            default:
+                toast.loading("Transaction pending", { id: event.id });
+        }
+    });
 
     return (
         <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
@@ -81,17 +123,59 @@ export function MakeGuess() {
 
 function NewGame() {
 
-    const { startNewGame } = useContext(GameContext)
+    const { refreshGame } = useContext(GameContext)
 
     // @ts-ignore
     const refMin = useRef();
     // @ts-ignore
     const refMax = useRef();
 
+    const [__, newGame] = useContractMutation((mutate) =>
+        mutate(gtnContract, CONTRACT_ADDRESS, "start_new_game", {
+            data: {"min_number": refMin.current?.value, "max_number": refMax.current?.value},
+        }),
+    );
+
+    useMutationEffect((event) => {
+        if (event.value === pending) {
+            toast.loading("Submitting transaction", { id: event.id });
+            return;
+        }
+
+        if (event.value instanceof MutationError) {
+            toast.error("Failed to submit transaction", { id: event.id });
+            return;
+        }
+
+        switch (event.value.type) {
+            case "finalized":
+                if (event.value.ok) {
+                    toast.success("Submitted transaction", { id: event.id });
+                    refreshGame();
+                } else {
+                    toast.error("Transaction failed", { id: event.id });
+                }
+                break;
+            default:
+                toast.loading("Transaction pending", { id: event.id });
+        }
+    });
+
+
     const submit = async () => {
         const minNumber = refMin.current?.value;
         const maxNumber = refMax.current?.value;
-        await startNewGame(minNumber, maxNumber);
+
+        console.log("Start new game " + minNumber + " - " + maxNumber);
+        if (isNaN(Number(minNumber)) || isNaN(Number(maxNumber)) || minNumber < 0 || maxNumber < 0){
+            toast.error("Min and Max must be positive numbers");
+            return;
+        }
+        if (minNumber >= maxNumber){
+            toast.error("Min must be inferior to Max");
+            return;
+        }
+        newGame();
     };
 
     return (
@@ -106,6 +190,7 @@ function NewGame() {
 
 export function Game() {
 
+    const resetQueryError = useQueryErrorResetter();
     return (
         <div>
             <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
@@ -113,10 +198,30 @@ export function Game() {
                     <GameIntro />
                 </div>
             </Box>
-            <div>
-                <CurrentGame />
-                <NewGame />
-            </div>
+            <ErrorBoundary
+                FallbackComponent={ErrorFallback}
+                onReset={() => resetQueryError()}
+            >
+                <div>
+                    <Suspense fallback={<h2>Loading game ...</h2>}>
+                        <CurrentGame />
+                    </Suspense>
+                    <NewGame />
+                </div>
+            </ErrorBoundary>
         </div>
+    );
+}
+
+function ErrorFallback({ resetErrorBoundary }: FallbackProps) {
+    return (
+        <article>
+            <header>
+                <strong>Oops, something went wrong!</strong>
+            </header>
+            <button type="button" onClick={() => resetErrorBoundary()}>
+                Retry
+            </button>
+        </article>
     );
 }

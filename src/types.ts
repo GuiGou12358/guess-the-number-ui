@@ -7,11 +7,9 @@ export type Attempt = {
 
 export type Clue = {
         type: "More", value: undefined
-    }
-    | {
+    } | {
     type: "Less", value: undefined
-}
-    | {
+    } | {
     type: "Found", value: undefined
 };
 
