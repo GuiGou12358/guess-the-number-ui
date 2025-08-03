@@ -2,13 +2,12 @@ import {createContext, useContext, useEffect, useState} from 'react';
 import type {Attempt, Game} from "../types.ts";
 import {getOrCreateContract} from "../contract.tsx";
 import {MySignerContext} from "./my-signer-context.tsx";
+import {encodeAddress} from "@polkadot/keyring";
 
 export const GameContext = createContext<GameContextStruct>();
 export type GameContextStruct = {
     game : Game | undefined,
     getAttempts : () => Attempt[],
-    //startNewGame : (minNumber: number, maxNumber: number) => Promise<void>,
-    //makeGuess : (guess: number) => Promise<void>,
     refreshGuesses : () => void,
     refreshGame : () => void,
 }
@@ -47,13 +46,12 @@ export const GameContextProvider = ({ children }) => {
     //const signer = useContext(SignerContext);
     const [game, setGame] = useState<Game>();
     const [attempts, setAttempts] = useState<Attempt[]>([]);
-    const [nbAttempts, setNbAttempts] = useState(0);
     const [nbNewGames, setNbNewGames] = useState(0);
     const [nbNewGuesses, setNbNewGuesses] = useState(0);
 
     useEffect(() => {
-        console.log("signer " + signer?.publicKey);
         if (signer) {
+            console.log("address: " + encodeAddress(signer.publicKey));
             console.log("refresh game");
             getOrCreateContract()
                 .getCurrentGame(signer)
@@ -66,6 +64,8 @@ export const GameContextProvider = ({ children }) => {
                     setGame(undefined);
                     setAttempts([]);
                 });
+        } else {
+            console.warn("no selected address");
         }
     }, [signer, nbNewGames]);
 
@@ -77,13 +77,12 @@ export const GameContextProvider = ({ children }) => {
                 .then(
                     (game) => {
                         setAttempts(updateAttempts(attempts, game));
-                        setNbAttempts(nbAttempts+1);
                     }
                 ).catch((e) => {
                     setAttempts([]);
                 });
         }
-    }, [signer, game, nbNewGuesses]);
+    }, [game, nbNewGuesses]);
 
     const refreshInBackground = async () => {
         if (signer) {
@@ -93,7 +92,6 @@ export const GameContextProvider = ({ children }) => {
                 .then(
                     (game) => {
                         setAttempts(updateAttempts(attempts, game));
-                        setNbAttempts(nbAttempts+1);
                     }
                 ).catch((e) => {
                     setAttempts([]);
