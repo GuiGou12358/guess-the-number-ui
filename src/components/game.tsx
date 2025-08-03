@@ -1,6 +1,6 @@
 import {Suspense, useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
-import {GameContext} from "../context/game-context.tsx";
+import {GameContext} from "../contexts/game-context.tsx";
 import {GameIntro} from "./game-intro.tsx";
 import {CONTRACT_ADDRESS, gtnContract} from "../config.ts";
 import {toast} from "react-hot-toast";
@@ -8,6 +8,7 @@ import {useContractMutation, useMutationEffect, useQueryErrorResetter} from "@re
 import {MutationError, pending} from "@reactive-dot/core";
 import {ErrorBoundary, type FallbackProps} from "react-error-boundary";
 import type {MutationEvent} from "@reactive-dot/react/src/contexts/mutation.tsx";
+import {isPositiveNumber} from "../utils/number-utils.ts";
 
 
 export function CurrentGame() {
@@ -78,7 +79,7 @@ export function MakeGuess() {
         const guessNumber = inputNumber.current?.value;
 
         console.log("Guess " + guessNumber);
-        if (guessNumber == undefined || guessNumber.length == 0 || isNaN(Number(guessNumber)) || guessNumber < 0){
+        if (!isPositiveNumber(guessNumber)){
             toast.error("The input must be positive number");
             return;
         }
@@ -120,7 +121,7 @@ function NewGame() {
         const maxNumber = refMax.current?.value;
 
         console.log("Start new game " + minNumber + " - " + maxNumber);
-        if (isNaN(Number(minNumber)) || isNaN(Number(maxNumber)) || minNumber < 0 || maxNumber < 0){
+        if (!isPositiveNumber(minNumber) || ! isPositiveNumber(maxNumber)){
             toast.error("Min and Max must be positive numbers");
             return;
         }

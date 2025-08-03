@@ -5,9 +5,9 @@ import {Suspense} from "react";
 import {ConnectionButton} from "dot-connect/react.js";
 import {Game} from "./game.tsx";
 import {Toaster} from "react-hot-toast";
-import {GameContextProvider} from "../context/game-context.tsx";
+import {GameContextProvider} from "../contexts/game-context.tsx";
 import {AccountSelect} from "./account-select.tsx";
-import {MySignerProvider} from "../context/my-signer-context.tsx";
+import {MySignerProvider} from "../contexts/my-signer-context.tsx";
 
 export function App() {
 
