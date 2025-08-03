@@ -1,14 +1,13 @@
 import {contracts, pop} from "@polkadot-api/descriptors"
-import {createClient, type TxEvent, type TxObservable} from "polkadot-api"
+import {createClient, type TxEvent} from "polkadot-api"
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat"
 import {type PolkadotSigner} from "polkadot-api/signer"
 import {getWsProvider} from "polkadot-api/ws-provider/web"
 import {createReviveSdk} from "@polkadot-api/sdk-ink"
 import {encodeAddress} from "@polkadot/keyring"
-import {toast, type ToastOptions} from "react-hot-toast"
+import {toast} from "react-hot-toast"
 import {type Observer} from "rxjs"
 import {CONTRACT_ADDRESS} from "./config.ts";
-import {Button} from "@mui/material";
 
 let myContract: MyContract | undefined;
 
@@ -70,10 +69,7 @@ export class MyContract {
         }
 
         console.log("Submitting tx ... ")
-        const txToast = toast.loading(
-            "Submitting Transaction ...",
-            { position: 'bottom-right' }
-        );
+        const txToast = toast.loading("Submitting Transaction");
         this.contract
             .send("guess", tx)
             .signSubmitAndWatch(signer)
@@ -99,10 +95,7 @@ export class MyContract {
         }
 
         console.log("Submitting tx ... ")
-        const txToast = toast.loading(
-            "Submitting Transaction ...",
-            { position: 'bottom-right' }
-        );
+        const txToast = toast.loading("Submitting Transaction");
         this.contract
             .send("start_new_game", tx)
             .signSubmitAndWatch(signer)
