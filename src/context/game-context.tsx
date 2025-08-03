@@ -44,6 +44,7 @@ function updateAttempts(attempts: Attempt[], game: Game){
 export const GameContextProvider = ({ children }) => {
 
     const signer = useContext(MySignerContext);
+    //const signer = useContext(SignerContext);
     const [game, setGame] = useState<Game>();
     const [attempts, setAttempts] = useState<Attempt[]>([]);
     const [nbAttempts, setNbAttempts] = useState(0);
@@ -51,7 +52,7 @@ export const GameContextProvider = ({ children }) => {
     const [nbNewGuesses, setNbNewGuesses] = useState(0);
 
     useEffect(() => {
-        console.log("signer " + signer);
+        console.log("signer " + signer?.publicKey);
         if (signer) {
             console.log("refresh game");
             getOrCreateContract()
@@ -109,7 +110,6 @@ export const GameContextProvider = ({ children }) => {
             clearInterval(backgroundSyncInterval);
         }
     });
-
 
     const refreshGuesses = () => {
         setNbNewGuesses(nbNewGuesses + 1);
