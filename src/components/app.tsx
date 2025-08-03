@@ -1,25 +1,35 @@
 import {config} from "../config";
 import "../styles/globals.css";
-import {ChainProvider, ReactiveDotProvider} from "@reactive-dot/react";
+import {ChainProvider, ReactiveDotProvider, SignerProvider} from "@reactive-dot/react";
 import {Suspense} from "react";
 import {ConnectionButton} from "dot-connect/react.js";
 import {Game} from "./game.tsx";
-import {Accounts} from "./accounts.tsx";
 import {Toaster} from "react-hot-toast";
 import {GameContextProvider} from "../context/game-context.tsx";
+import {AccountSelect} from "./account-select.tsx";
+import {MySignerProvider} from "../context/my-signer-context.tsx";
 
 export function App() {
 
     return (
         <ReactiveDotProvider config={config}>
+            <Suspense fallback="Loading wallet connection...">
+                <ConnectionButton/>
+            </Suspense>
             <ChainProvider chainId="pop">
                 {/* Make sure there is at least one Suspense boundary wrapping the app */}
                 <Suspense>
-                    <ConnectionButton/>
-                    <GameContextProvider>
-                        <Accounts/>
-                        <Game/>
-                    </GameContextProvider>
+                    <AccountSelect >
+                        {(selectedAccount) => (
+                            <SignerProvider signer={selectedAccount.polkadotSigner}>
+                                <MySignerProvider signer={selectedAccount.polkadotSigner}>
+                                    <GameContextProvider>
+                                        <Game/>
+                                    </GameContextProvider>
+                                </MySignerProvider>
+                            </SignerProvider>
+                        )}
+                    </AccountSelect>
                 </Suspense>
             </ChainProvider>
             <Toaster

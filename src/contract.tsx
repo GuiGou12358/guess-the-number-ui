@@ -12,9 +12,9 @@ import {Button} from "@mui/material";
 
 let myContract: MyContract | undefined;
 
-export function getOrCreateContract(signer: PolkadotSigner) {
+export function getOrCreateContract() {
     if (!myContract) {
-        myContract = new MyContract("wss://rpc1.paseo.popnetwork.xyz", CONTRACT_ADDRESS, signer);
+        myContract = new MyContract("wss://rpc1.paseo.popnetwork.xyz", CONTRACT_ADDRESS);
     }
     return myContract;
 }
@@ -22,13 +22,10 @@ export function getOrCreateContract(signer: PolkadotSigner) {
 export class MyContract {
 
     contract: any
-    sender: PolkadotSigner
-    senderAddress: string
 
     constructor(
         rpc: string,
         address: string,
-        sender: PolkadotSigner,
     ) {
 
         const client = createClient(withPolkadotSdkCompat(getWsProvider(rpc)))
@@ -36,37 +33,40 @@ export class MyContract {
         const sdk = createReviveSdk(typedApi, contracts.guess_the_number)
         this.contract = sdk.getContract(address)
 
-        this.sender = sender;
-        this.senderAddress = encodeAddress(sender.publicKey)
-
     }
 
-    async getCurrentGame(): Promise<any> {
+    async getCurrentGame(sender: PolkadotSigner): Promise<any> {
+
+        const senderAddress = encodeAddress(sender.publicKey)
+
         const {value, success} = await this.contract.query(
             "get_current_game",
             {
-                origin: this.senderAddress,
+                origin: senderAddress,
             },
         )
         if (!success) {
-            return Promise.reject("Error to query has_message method")
+            return Promise.reject("Error to query get_current_game method")
         }
         return value.response
     }
 
 
-    async makeAGuess(guess: number, callback: Callback): Promise<any> {
+    async makeAGuess(signer: PolkadotSigner, guess: number, callback: Callback): Promise<any> {
 
+        const signerAddress = encodeAddress(signer.publicKey)
         const tx = {
-            origin: this.senderAddress,
+            origin: signerAddress,
             data: {guess},
         }
 
         console.log("Dry Run ...")
         const {value, success} = await this.contract.query("guess", tx);
         if (!success) {
-            console.error("Error when dry run tx " + value.toString())
-            toast.error("Error when dry run tx " + value.toString());
+            console.error("Error when dry run tx ... ")
+            console.error(value)
+            toast.error("Error: " +  value?.value?.value?.type);
+            return;
         }
 
         console.log("Submitting tx ... ")
@@ -76,23 +76,26 @@ export class MyContract {
         );
         this.contract
             .send("guess", tx)
-            .signSubmitAndWatch(this.sender)
+            .signSubmitAndWatch(signer)
             .subscribe(buildEventObserver(txToast, "Number " + guess + " submitted", callback));
     }
 
 
-    async startNewGame(minNumber: number, maxNumber: number, callback: Callback): Promise<any> {
+    async startNewGame(signer: PolkadotSigner, minNumber: number, maxNumber: number, callback: Callback): Promise<any> {
 
+        const signerAddress = encodeAddress(signer.publicKey)
         const tx = {
-            origin: this.senderAddress,
+            origin: signerAddress,
             data: {"min_number": minNumber, "max_number": maxNumber},
         }
 
         console.log("Dry Run ...")
         const {value, success} = await this.contract.query("start_new_game", tx,)
         if (!success) {
-            console.error("Error when dry run tx " + value.toString())
-            toast.error("Error when dry run tx " + value.toString());
+            console.error("Error when dry run tx ... ")
+            console.error(value)
+            toast.error("Error: " +  value?.value?.value?.type);
+            return;
         }
 
         console.log("Submitting tx ... ")
@@ -102,7 +105,7 @@ export class MyContract {
         );
         this.contract
             .send("start_new_game", tx)
-            .signSubmitAndWatch(this.sender)
+            .signSubmitAndWatch(signer)
             .subscribe(buildEventObserver(txToast, "New game started", callback));
     }
 }
@@ -137,14 +140,8 @@ function buildEventObserver(toastId: string,  successMessage: string, callback: 
             toast.error(message);
         },
         complete: () => {
-            const toastValue = (t) => (
-                <span className="toast-tx-result text-right">
-                    {successMessage}
-                    <Button sx={{margin:'0 3px', textTransform:'none'}} onClick={() => toast.dismiss(t.id)}>X</Button>
-                 </span>
-            );
             toast.dismiss(toastId);
-            toast(toastValue, { duration: 5000 });
+            toast.success(successMessage, { duration: 5000 });
             callback();
         }
     };

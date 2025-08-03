@@ -1,4 +1,3 @@
-import {SignerProvider, useAccounts} from "@reactive-dot/react";
 import {useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
 import {GameContext} from "../context/game-context.tsx";
@@ -7,10 +6,14 @@ import {GameIntro} from "./game-intro.tsx";
 
 export function CurrentGame() {
 
-    const { game, attempts, nbAttempts } = useContext(GameContext);
+    const { game, getAttempts} = useContext(GameContext);
 
     if (game == undefined){
-        return (<div>The game is loading or no game is started yet</div>);
+        return (
+            <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
+                <div>No game yet</div>
+            </Box>
+        );
     }
     return (
         <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
@@ -20,7 +23,7 @@ export function CurrentGame() {
                     <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
                         <div>
                             <ul>
-                                {attempts.map(attempt => (
+                                {getAttempts().map(attempt => (
                                     <li key={attempt.attemptNumber}>
                                         {(() => {
                                             if (attempt.clue == undefined){
@@ -103,8 +106,6 @@ function NewGame() {
 
 export function Game() {
 
-    const accounts = useAccounts();
-
     return (
         <div>
             <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
@@ -113,10 +114,8 @@ export function Game() {
                 </div>
             </Box>
             <div>
-                <SignerProvider signer={accounts.at(0)?.polkadotSigner}>
-                    <CurrentGame />
-                    <NewGame />
-                </SignerProvider>
+                <CurrentGame />
+                <NewGame />
             </div>
         </div>
     );
