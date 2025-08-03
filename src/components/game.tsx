@@ -1,12 +1,13 @@
-import {useContext, useRef} from "react";
+import {Suspense, useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
 import {GameContext} from "../context/game-context.tsx";
 import {GameIntro} from "./game-intro.tsx";
 import {CONTRACT_ADDRESS, gtnContract} from "../config.ts";
 import {toast} from "react-hot-toast";
 import {useContractMutation, useMutationEffect, useQueryErrorResetter} from "@reactive-dot/react";
-import {MutationError, pending} from "@reactive-dot/core";import { Suspense } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import {MutationError, pending} from "@reactive-dot/core";
+import {ErrorBoundary, type FallbackProps} from "react-error-boundary";
+import type {MutationEvent} from "@reactive-dot/react/src/contexts/mutation.tsx";
 
 
 export function CurrentGame() {
@@ -84,31 +85,7 @@ export function MakeGuess() {
         makeGuess();
     };
 
-
-    useMutationEffect((event) => {
-        if (event.value === pending) {
-            toast.loading("Submitting transaction", { id: event.id });
-            return;
-        }
-
-        if (event.value instanceof MutationError) {
-            toast.error("Failed to submit transaction", { id: event.id });
-            return;
-        }
-
-        switch (event.value.type) {
-            case "finalized":
-                if (event.value.ok) {
-                    toast.success("Submitted transaction", { id: event.id });
-                    refreshGuesses();
-                } else {
-                    toast.error("Transaction failed", { id: event.id });
-                }
-                break;
-            default:
-                toast.loading("Transaction pending", { id: event.id });
-        }
-    });
+    useMutationEffect(onMutationEvent(refreshGuesses));
 
     return (
         <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
@@ -136,31 +113,7 @@ function NewGame() {
         }),
     );
 
-    useMutationEffect((event) => {
-        if (event.value === pending) {
-            toast.loading("Submitting transaction", { id: event.id });
-            return;
-        }
-
-        if (event.value instanceof MutationError) {
-            toast.error("Failed to submit transaction", { id: event.id });
-            return;
-        }
-
-        switch (event.value.type) {
-            case "finalized":
-                if (event.value.ok) {
-                    toast.success("Submitted transaction", { id: event.id });
-                    refreshGame();
-                } else {
-                    toast.error("Transaction failed", { id: event.id });
-                }
-                break;
-            default:
-                toast.loading("Transaction pending", { id: event.id });
-        }
-    });
-
+    useMutationEffect(onMutationEvent(refreshGame));
 
     const submit = async () => {
         const minNumber = refMin.current?.value;
@@ -187,6 +140,31 @@ function NewGame() {
     );
 }
 
+function onMutationEvent(callback: () => void) : (event: MutationEvent) => void {
+    return  (event: MutationEvent) => {
+        if(event.value === pending) {
+            toast.loading("Submitting transaction ...", {id: event.id});
+            return;
+        }
+        if (event.value instanceof MutationError) {
+            toast.error("Failed to submit transaction", {id: event.id});
+            return;
+        }
+        switch (event.value.type) {
+            case "finalized":
+                if (event.value.ok) {
+                    toast.success("Submitted transaction with hash " + event.value.txHash, {id: event.id});
+                    callback();
+                } else {
+                    console.error(event)
+                    toast.error("Transaction failed: " + event.value?.dispatchError?.value?.value?.type, {id: event.id});
+                }
+                break;
+            default:
+                toast.loading("Transaction pending", {id: event.id});
+        }
+    }
+}
 
 export function Game() {
 
