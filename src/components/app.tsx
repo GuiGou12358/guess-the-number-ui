@@ -1,4 +1,5 @@
 import {config} from "../config";
+import "../styles/globals.css";
 import {ChainProvider, ReactiveDotProvider} from "@reactive-dot/react";
 import {Suspense} from "react";
 import {ConnectionButton} from "dot-connect/react.js";

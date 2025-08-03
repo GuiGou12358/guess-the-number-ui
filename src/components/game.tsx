@@ -2,6 +2,7 @@ import {SignerProvider, useAccounts} from "@reactive-dot/react";
 import {useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
 import {GameContext} from "../context/game-context.tsx";
+import {GameIntro} from "./game-intro.tsx";
 
 
 export function CurrentGame() {
@@ -13,8 +14,8 @@ export function CurrentGame() {
     }
     return (
         <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
-            <div>
-                <div>Game {game?.game_number} - Guess the number between {game?.min_number} and {game?.max_number}</div>
+            <div className="content-block">
+                <div>Current game - Guess the number between {game?.min_number} and {game?.max_number}</div>
                 <div>
                     <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
                         <div>
@@ -61,13 +62,15 @@ export function MakeGuess() {
 
     const submit = async () => {
         const guessNumber = inputNumber.current?.value;
-        makeGuess(guessNumber);
+        await makeGuess(guessNumber);
     };
 
     return (
         <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
+            <div className="content-block">
             <TextField inputRef={inputNumber} sx={{margin:'0 20px 0 0'}} id="guess-number-value" label="Enter your number" variant="outlined" />
             <Button onClick={submit} variant="contained">Make a guess</Button>
+            </div>
         </Box>
     );
 }
@@ -85,7 +88,7 @@ function NewGame() {
     const submit = async () => {
         const minNumber = refMin.current?.value;
         const maxNumber = refMax.current?.value;
-        startNewGame(minNumber, maxNumber);
+        await startNewGame(minNumber, maxNumber);
     };
 
     return (
@@ -103,11 +106,18 @@ export function Game() {
     const accounts = useAccounts();
 
     return (
-        <section>
-            <SignerProvider signer={accounts.at(0)?.polkadotSigner}>
-                <CurrentGame />
-                <NewGame />
-            </SignerProvider>
-        </section>
+        <div>
+            <Box sx={{padding:"50px 40px 0 40px"}} display={'flex'} justifyContent={'center'}>
+                <div className="md:w-[600px] content-block bg-[#191B1F] rounded-2xl px-2 py-8">
+                    <GameIntro />
+                </div>
+            </Box>
+            <div>
+                <SignerProvider signer={accounts.at(0)?.polkadotSigner}>
+                    <CurrentGame />
+                    <NewGame />
+                </SignerProvider>
+            </div>
+        </div>
     );
 }

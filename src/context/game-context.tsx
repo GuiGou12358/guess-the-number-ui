@@ -4,9 +4,14 @@ import {useAccounts} from "@reactive-dot/react";
 import {getOrCreateContract} from "../ink-client.tsx";
 
 
-export const GameContext = createContext();
-
-
+export const GameContext = createContext<GameContextStruct>();
+export type GameContextStruct = {
+    game : Game | undefined,
+    attempts : Attempt[] | undefined,
+    nbAttempts : number,
+    startNewGame : (minNumber: number, maxNumber: number) => Promise<void>,
+    makeGuess : (guess: number) => Promise<void>,
+}
 
 function updateAttempts(attempts: Attempt[], game: Game){
     if (game == undefined){
@@ -115,6 +120,10 @@ export const GameContextProvider = ({ children }) => {
 
     const makeGuess = async (guess: number) => {
         console.log("Guess " + guess);
+        if (isNaN(Number(guess)) || guess < 0){
+            console.error("Guess number incorrect");
+            return;
+        }
         if (signer){
             await getOrCreateContract(signer).makeAGuess(guess, refreshGuesses);
         }
@@ -133,8 +142,11 @@ export const GameContextProvider = ({ children }) => {
     }
 
     const startNewGame = async (minNumber: number, maxNumber: number) => {
-
         console.log("Start new game " + minNumber + " - " + maxNumber);
+        if (isNaN(Number(minNumber)) || isNaN(Number(maxNumber)) || minNumber >= maxNumber || minNumber < 0){
+            console.error("Min and Max number incorrect");
+            return;
+        }
         if (signer){
             //newGame();
             await getOrCreateContract(signer).startNewGame(minNumber, maxNumber, refreshGame);
