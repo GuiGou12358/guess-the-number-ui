@@ -144,11 +144,7 @@ function buildEventObserver(toastId: string,  successMessage: string, callback: 
                  </span>
             );
             toast.dismiss(toastId);
-            const toastOptions: ToastOptions = {
-                duration: 5000,
-                position: 'bottom-right',
-            };
-            toast(toastValue, toastOptions);
+            toast(toastValue, { duration: 5000 });
             callback();
         }
     };

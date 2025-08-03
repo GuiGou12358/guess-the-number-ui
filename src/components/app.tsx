@@ -21,7 +21,26 @@ export function App() {
                     </GameContextProvider>
                 </Suspense>
             </ChainProvider>
-            <Toaster />
+            <Toaster
+                position="bottom-right"
+                toastOptions={{
+                    className: "custom-toast",
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                    },
+                    success: {
+                        style: {
+                            background: 'green',
+                        },
+                    },
+                    error: {
+                        style: {
+                            background: 'red',
+                        },
+                    },
+                }}
+            />
         </ReactiveDotProvider>
     );
 }
