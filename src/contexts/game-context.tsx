@@ -1,8 +1,8 @@
-import {createContext, useContext, useEffect, useState} from 'react';
+import {createContext, useEffect, useState} from 'react';
 import type {Attempt, Game} from "../types.ts";
 import {getOrCreateContract} from "../contract.tsx";
-import {MySignerContext} from "./my-signer-context.tsx";
 import {encodeAddress} from "@polkadot/keyring";
+import {useSigner} from "@reactive-dot/react";
 
 export const GameContext = createContext<GameContextStruct>();
 export type GameContextStruct = {
@@ -42,7 +42,7 @@ function updateAttempts(attempts: Attempt[], game: Game){
 
 export const GameContextProvider = ({ children }) => {
 
-    const signer = useContext(MySignerContext);
+    const signer = useSigner();
     //const signer = useContext(SignerContext);
     const [game, setGame] = useState<Game>();
     const [attempts, setAttempts] = useState<Attempt[]>([]);

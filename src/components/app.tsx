@@ -7,7 +7,6 @@ import {Game} from "./game.tsx";
 import {Toaster} from "react-hot-toast";
 import {GameContextProvider} from "../contexts/game-context.tsx";
 import {AccountSelect} from "./account-select.tsx";
-import {MySignerProvider} from "../contexts/my-signer-context.tsx";
 
 export function App() {
 
@@ -22,11 +21,9 @@ export function App() {
                     <AccountSelect >
                         {(selectedAccount) => (
                             <SignerProvider signer={selectedAccount.polkadotSigner}>
-                                <MySignerProvider signer={selectedAccount.polkadotSigner}>
-                                    <GameContextProvider>
-                                        <Game/>
-                                    </GameContextProvider>
-                                </MySignerProvider>
+                                <GameContextProvider>
+                                    <Game/>
+                                </GameContextProvider>
                             </SignerProvider>
                         )}
                     </AccountSelect>
