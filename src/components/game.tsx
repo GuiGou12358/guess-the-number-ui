@@ -2,9 +2,9 @@ import {Suspense, useContext, useRef} from "react";
 import {Box, Button, TextField} from "@mui/material";
 import {GameContext} from "../contexts/game-context.tsx";
 import {GameIntro} from "./game-intro.tsx";
-import {CONTRACT_ADDRESS, gtnContract} from "../config.ts";
+import {getContractAddress, gtnContract} from "../config.ts";
 import {toast} from "react-hot-toast";
-import {useContractMutation, useMutationEffect, useQueryErrorResetter} from "@reactive-dot/react";
+import {useContractMutation, useMutationEffect, useQueryErrorResetter, useChainId} from "@reactive-dot/react";
 import {MutationError, pending} from "@reactive-dot/core";
 import {ErrorBoundary, type FallbackProps} from "react-error-boundary";
 import type {MutationEvent} from "@reactive-dot/react/src/contexts/mutation.tsx";
@@ -65,12 +65,14 @@ export function CurrentGame() {
 
 export function MakeGuess() {
 
+    const chainId = useChainId();
+    const contractAddress = getContractAddress(chainId);
     const { refreshGuesses } = useContext(GameContext)
 
     const inputNumber = useRef('');
 
     const [_, makeGuess] = useContractMutation((mutate) =>
-        mutate(gtnContract, CONTRACT_ADDRESS, "guess", {
+        mutate(gtnContract, contractAddress, "guess", {
             data: {"guess": inputNumber.current?.value},
         }),
     );
@@ -101,6 +103,8 @@ export function MakeGuess() {
 
 function NewGame() {
 
+    const chainId = useChainId();
+    const contractAddress = getContractAddress(chainId);
     const { refreshGame } = useContext(GameContext)
 
     // @ts-ignore
@@ -109,7 +113,7 @@ function NewGame() {
     const refMax = useRef();
 
     const [__, newGame] = useContractMutation((mutate) =>
-        mutate(gtnContract, CONTRACT_ADDRESS, "start_new_game", {
+        mutate(gtnContract, contractAddress, "start_new_game", {
             data: {"min_number": refMin.current?.value, "max_number": refMax.current?.value},
         }),
     );

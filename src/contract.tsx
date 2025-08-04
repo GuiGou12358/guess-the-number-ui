@@ -7,15 +7,18 @@ import {createReviveSdk} from "@polkadot-api/sdk-ink"
 import {encodeAddress} from "@polkadot/keyring"
 import {toast} from "react-hot-toast"
 import {type Observer} from "rxjs"
-import {CONTRACT_ADDRESS} from "./config.ts";
+import {getContractAddress, getRpc} from "./config.ts";
 
-let myContract: MyContract | undefined;
+let myContracts = new Map<string, MyContract>();
 
-export function getOrCreateContract() {
-    if (!myContract) {
-        myContract = new MyContract("wss://rpc1.paseo.popnetwork.xyz", CONTRACT_ADDRESS);
+export function getOrCreateContract(chainId : string) : MyContract {
+    const address = getContractAddress(chainId);
+    if (!myContracts.has(address)) {
+        const rpc = getRpc(chainId);
+        myContracts.set(address, new MyContract(rpc, address));
     }
-    return myContract;
+    // @ts-ignore
+    return myContracts.get(address);
 }
 
 export class MyContract {

@@ -2,7 +2,7 @@ import {createContext, useEffect, useState} from 'react';
 import type {Attempt, Game} from "../types.ts";
 import {getOrCreateContract} from "../contract.tsx";
 import {encodeAddress} from "@polkadot/keyring";
-import {useSigner} from "@reactive-dot/react";
+import {useChainId, useSigner} from "@reactive-dot/react";
 
 export const GameContext = createContext<GameContextStruct>();
 export type GameContextStruct = {
@@ -42,18 +42,18 @@ function updateAttempts(attempts: Attempt[], game: Game){
 
 export const GameContextProvider = ({ children }) => {
 
+    const chainId = useChainId();
     const signer = useSigner();
-    //const signer = useContext(SignerContext);
     const [game, setGame] = useState<Game>();
     const [attempts, setAttempts] = useState<Attempt[]>([]);
     const [nbNewGames, setNbNewGames] = useState(0);
     const [nbNewGuesses, setNbNewGuesses] = useState(0);
 
     useEffect(() => {
-        if (signer) {
+        if (signer && chainId) {
             console.log("address: " + encodeAddress(signer.publicKey));
             console.log("refresh game");
-            getOrCreateContract()
+            getOrCreateContract(chainId)
                 .getCurrentGame(signer)
                 .then(
                     (game) => {
@@ -67,12 +67,12 @@ export const GameContextProvider = ({ children }) => {
         } else {
             console.warn("no selected address");
         }
-    }, [signer, nbNewGames]);
+    }, [signer, chainId, nbNewGames]);
 
     useEffect(() => {
-        if (signer) {
+        if (signer && chainId) {
             console.log("refresh attempts");
-            getOrCreateContract()
+            getOrCreateContract(chainId)
                 .getCurrentGame(signer)
                 .then(
                     (game) => {
@@ -85,9 +85,9 @@ export const GameContextProvider = ({ children }) => {
     }, [game, nbNewGuesses]);
 
     const refreshInBackground = async () => {
-        if (signer) {
+        if (signer && chainId) {
             console.log("periodically refresh attempts");
-            getOrCreateContract()
+            getOrCreateContract(chainId)
                 .getCurrentGame(signer)
                 .then(
                     (game) => {
