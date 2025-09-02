@@ -9,9 +9,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "gen-pop-rpc": "yarn papi add -w wss://rpc1.paseo.popnetwork.xyz pop",
+    "gen-pah-rpc": "yarn papi add -w wss://testnet-passet-hub.polkadot.io pah",
     "gen-ink-v6-contract-metadata": "yarn papi ink add metadata/guess_the_number.json",
-    "generate": "yarn gen-pop-rpc && yarn gen-ink-v6-contract-metadata",
+    "generate": "yarn gen-pah-rpc && yarn gen-ink-v6-contract-metadata",
     "postinstall": "yarn generate"
   },
   "peerDependencies": {

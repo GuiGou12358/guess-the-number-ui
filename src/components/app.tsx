@@ -15,7 +15,7 @@ export function App() {
             <Suspense fallback="Loading wallet connection...">
                 <ConnectionButton/>
             </Suspense>
-            <ChainProvider chainId="pop">
+            <ChainProvider chainId="pah">
                 {/* Make sure there is at least one Suspense boundary wrapping the app */}
                 <Suspense>
                     <AccountSelect >
