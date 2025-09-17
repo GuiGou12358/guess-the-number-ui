@@ -5,7 +5,7 @@ import {InjectedWalletProvider} from "@reactive-dot/core/wallets.js";
 import {registerDotConnect} from "dot-connect";
 
 const PAH_RPC = "wss://testnet-passet-hub.polkadot.io";
-const PAH_CONTRACT_ADDRESS = "0x22851ec2D16c25e83bFdf8d538bcD24e09b34b0e";
+const PAH_CONTRACT_ADDRESS = "0xe75cbD47620dBb2053CF2A98D06840f06baAf141";
 
 
 export const config = defineConfig({
