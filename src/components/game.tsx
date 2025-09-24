@@ -129,7 +129,7 @@ function NewGame() {
             toast.error("Min and Max must be positive numbers");
             return;
         }
-        if (minNumber >= maxNumber){
+        if (Number(minNumber) >= Number(maxNumber)){
             toast.error("Min must be inferior to Max");
             return;
         }

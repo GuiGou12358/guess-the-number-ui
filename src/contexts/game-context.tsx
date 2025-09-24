@@ -14,11 +14,11 @@ export type GameContextStruct = {
 
 function updateAttempts(attempts: Attempt[], game: Game){
     if (game == undefined){
-        return attempts;
+        return { updated: false, attempts };
     }
     const guess = game.last_guess;
     if (guess == undefined){
-        return attempts;
+        return { updated: false, attempts };
     }
 
     const gameNumber = game.game_number;
@@ -32,12 +32,38 @@ function updateAttempts(attempts: Attempt[], game: Game){
     }
 
     const index = attempts.findIndex(value => value.gameNumber === gameNumber && value.attemptNumber === attemptNumber);
+    let updated = false;
     if (index == -1) {
         attempts.push(attempt);
+        updated = true;
     } else {
-        attempts[index] = attempt;
+        const current = attempts[index];
+        if (! areEqualAttempts(current, attempt)){
+            attempts[index] = attempt;
+            updated = true;
+        }
     }
-    return attempts
+    return { updated, attempts };
+}
+
+
+function areEqualAttempts(attempt1: Attempt, attempt2: Attempt){
+    if (attempt1.gameNumber != attempt2.gameNumber){
+        return false;
+    }
+    if (attempt1.attemptNumber != attempt2.attemptNumber){
+        return false;
+    }
+    if (attempt1.guess != attempt2.guess){
+        return false;
+    }
+    if (attempt1.clue == undefined){
+        return attempt2.clue == undefined;
+    }
+    if (attempt2.clue == undefined){
+        return false;
+    }
+    return attempt1.clue.type == attempt2.clue.type;
 }
 
 export const GameContextProvider = ({ children }) => {
@@ -58,7 +84,10 @@ export const GameContextProvider = ({ children }) => {
                 .then(
                     (game) => {
                         setGame(game);
-                        setAttempts(updateAttempts([], game));
+                        const {updated, attempts: atts } = updateAttempts([], game);
+                        if (updated) {
+                            setAttempts(atts);
+                        }
                     }
                 ).catch((e) => {
                     setGame(undefined);
@@ -76,7 +105,10 @@ export const GameContextProvider = ({ children }) => {
                 .getCurrentGame(signer)
                 .then(
                     (game) => {
-                        setAttempts(updateAttempts(attempts, game));
+                        const {updated, attempts: atts } = updateAttempts(attempts, game);
+                        if (updated) {
+                            setAttempts(atts);
+                        }
                     }
                 ).catch((e) => {
                     setAttempts([]);
@@ -91,7 +123,11 @@ export const GameContextProvider = ({ children }) => {
                 .getCurrentGame(signer)
                 .then(
                     (game) => {
-                        setAttempts(updateAttempts(attempts, game));
+                        const {updated, attempts: atts } = updateAttempts(attempts, game);
+                        if (updated) {
+                            setAttempts(atts);
+                            refreshGuesses();
+                        }
                     }
                 ).catch((e) => {
                     setAttempts([]);
@@ -118,7 +154,7 @@ export const GameContextProvider = ({ children }) => {
     }
 
     const getAttempts =  () => {
-        if (game == undefined || attempts==undefined){
+        if (game == undefined || attempts == undefined){
             return [];
         }
         return attempts.filter(a => a.gameNumber == game.game_number);

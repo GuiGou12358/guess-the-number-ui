@@ -11,7 +11,7 @@
     "serve": "vite preview",
     "gen-pah-rpc": "yarn papi add -w wss://testnet-passet-hub.polkadot.io pah",
     "gen-ink-v6-contract-metadata": "yarn papi ink add metadata/guess_the_number.json",
-    "generate": "yarn gen-pah-rpc && yarn gen-ink-v6-contract-metadata",
+    "generate": "yarn gen-ink-v6-contract-metadata && yarn gen-pah-rpc",
     "postinstall": "yarn generate"
   },
   "peerDependencies": {
@@ -23,16 +23,16 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
-    "@polkadot-api/sdk-ink": "^0.4.0",
+    "@polkadot-api/sdk-ink": "^0.4.3",
     "@polkadot/keyring": "^13.5.6",
     "@reactive-dot/react": "^0.46.2",
     "dayjs": "^1.11.18",
     "dot-connect": "^0.22.1",
-    "polkadot-api": "*",
-    "react": "latest",
-    "react-dom": "latest",
+    "polkadot-api": "^1.18.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "react-error-boundary": "^6.0.0",
-    "react-hot-toast": "^2.5.2"
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",
