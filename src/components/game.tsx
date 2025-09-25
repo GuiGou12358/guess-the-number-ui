@@ -152,7 +152,8 @@ function onMutationEvent(callback: () => void) : (event: MutationEvent) => void 
             return;
         }
         if (event.value instanceof MutationError) {
-            toast.error("Failed to submit transaction", {id: event.id});
+            console.error(event)
+            toast.error("Failed to submit transaction: " + event.value, {id: event.id});
             return;
         }
         switch (event.value.type) {
