@@ -9,9 +9,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "gen-pah-rpc": "yarn papi add -w wss://testnet-passet-hub.polkadot.io pah",
+    "gen-pah-metadata": "yarn papi add -w wss://testnet-passet-hub.polkadot.io pah",
     "gen-ink-v6-contract-metadata": "yarn papi ink add metadata/guess_the_number.json",
-    "generate": "yarn gen-ink-v6-contract-metadata && yarn gen-pah-rpc",
+    "generate": "yarn gen-ink-v6-contract-metadata && yarn gen-pah-metadata",
     "postinstall": "yarn generate"
   },
   "peerDependencies": {
