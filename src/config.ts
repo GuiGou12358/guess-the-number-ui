@@ -1,23 +1,23 @@
-import {contracts, pah} from "@polkadot-api/descriptors";
+import {contracts, wah} from "@polkadot-api/descriptors";
 import {getWsProvider} from "@polkadot-api/ws-provider/web";
 import {defineConfig, defineContract} from "@reactive-dot/core";
 import {InjectedWalletProvider} from "@reactive-dot/core/wallets.js";
 import {registerDotConnect} from "dot-connect";
 
-const PAH_RPC = "wss://testnet-passet-hub.polkadot.io";
-const PAH_CONTRACT_ADDRESS = "0x2f049B972Aff02Fbe7496B62e73c8D2811f3e335";
+const WAH_RPC = "wss://westend-asset-hub-rpc.polkadot.io";
+const WAH_CONTRACT_ADDRESS = "0x21A41F8e279Cb3299fcf36068118C60eF63c332C";
 
 
 export const config = defineConfig({
     chains: {
-        pah: {
-            descriptor: pah,
-            provider: getWsProvider(PAH_RPC),
-            rpc: PAH_RPC,
-            contractAddress: PAH_CONTRACT_ADDRESS,
+        wah: {
+            descriptor: wah,
+            provider: getWsProvider(WAH_RPC),
+            rpc: WAH_RPC,
+            contractAddress: WAH_CONTRACT_ADDRESS,
         },
     },
-    targetChains:["pah"],
+    targetChains:["wah"],
     wallets: [
         new InjectedWalletProvider(),
     ],

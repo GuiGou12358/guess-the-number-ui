@@ -1,4 +1,4 @@
-import {contracts, pah} from "@polkadot-api/descriptors"
+import {contracts, wah} from "@polkadot-api/descriptors"
 import {createClient, type TxEvent} from "polkadot-api"
 import {withPolkadotSdkCompat} from "polkadot-api/polkadot-sdk-compat"
 import {type PolkadotSigner} from "polkadot-api/signer"
@@ -31,7 +31,7 @@ export class MyContract {
     ) {
 
         const client = createClient(withPolkadotSdkCompat(getWsProvider(rpc)))
-        const typedApi = client.getTypedApi(pah)
+        const typedApi = client.getTypedApi(wah)
         const sdk = createReviveSdk(typedApi, contracts.guess_the_number)
         this.contract = sdk.getContract(address)
 
