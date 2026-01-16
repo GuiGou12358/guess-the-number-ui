@@ -22,7 +22,6 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-api/sdk-ink": "^0.6.2",
     "@polkadot/keyring": "^14.0.1",
     "@reactive-dot/react": "^0.68.2",
